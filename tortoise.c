@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <math.h>
+#include <libguile.h>
 
 static const int WIDTH = 10;
 static const int HEIGHT = 10;
@@ -53,7 +54,7 @@ draw_line (FILE*  output, double x1, double y1, double x2, double y2)
   fflush (output);
 }
 
-static void
+static SCM
 tortoise_reset ()
 {
   x = y = 0.0;
@@ -62,41 +63,67 @@ tortoise_reset ()
 
   fprintf (global_output, "clear\n");
   fflush (global_output);
+
+  return SCM_UNSPECIFIED;
 }
 
-static void
+static SCM
 tortoise_pendown ()
 {
+  SCM result = scm_from_bool (pendown);
   pendown = 1;
+
+  return result;
 }
 
-static void
+static SCM
 tortoise_penup ()
 {
+  SCM result = scm_from_bool (pendown);
   pendown = 0;
+
+  return result;
 }
 
-static void
-tortoise_turn (double degrees)
+static SCM
+tortoise_turn (SCM degrees)
 {
-  direction += M_PI / 180.0 * degrees;
+  const double value = scm_to_double (degrees);
+  direction += M_PI / 180.0 * value;
+
+  return scm_from_double (direction * 180.0 / M_PI);
 }
 
-static void
-tortoise_move (double length)
+static SCM
+tortoise_move (SCM length)
 {
+  const double value = scm_to_double (length);
   double newX, newY;
 
-  newX = x + length * cos (direction);
-  newY = y + length * sin (direction);
+  newX = x + value * cos (direction);
+  newY = y + value * sin (direction);
 
   if (pendown)
     draw_line (global_output, x, y, newX, newY);
 
   x = newX;
   y = newY;
+
+  return scm_list_2 (scm_from_double (x), scm_from_double (y));
 }
 
+static void*
+register_functions (void* data)
+{
+  // req, opt, &rest
+  scm_c_define_gsubr ("tortoise-reset", 0, 0, 0, &tortoise_reset);
+  scm_c_define_gsubr ("tortoise-penup", 0, 0, 0, &tortoise_penup);
+  scm_c_define_gsubr ("tortoise-pendown", 0, 0, 0, &tortoise_pendown);
+  scm_c_define_gsubr ("tortoise-turn", 1, 0, 0, &tortoise_turn);
+  scm_c_define_gsubr ("tortoise-move", 1, 0, 0, &tortoise_move);
+
+  return NULL;
+}
 
 int
 main (int argc, char* argv[])
@@ -104,13 +131,16 @@ main (int argc, char* argv[])
   global_output = start_gnuplot ();
   tortoise_reset ();
 
-  int i;
-  tortoise_pendown ();
-  for (i = 1; i <= 4; ++i)
-    {
-      tortoise_move (3.0);
-      tortoise_turn (90.0);
-    }
+  /* int i; */
+  /* tortoise_pendown (); */
+  /* for (i = 1; i <= 4; ++i) */
+  /*   { */
+  /*     tortoise_move (3.0); */
+  /*     tortoise_turn (90.0); */
+  /*   } */
+  scm_with_guile (&register_functions, NULL);
+  // Or use: scm_init_guile ()
+  scm_shell (argc, argv);
 
   return EXIT_SUCCESS;
 }

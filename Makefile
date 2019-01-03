@@ -1,6 +1,6 @@
 # Basic file
-CFLAGS =
-LIBS =
+CFLAGS = `guile-config compile`
+LIBS = `guile-config link`
 LDFLAGS = -lm
 
 .PHONY: clean build run
