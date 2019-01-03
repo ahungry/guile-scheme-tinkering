@@ -1,6 +1,7 @@
 # Basic file
 CFLAGS =
 LIBS =
+LDFLAGS = -lm
 
 .PHONY: clean build run
 
@@ -14,7 +15,7 @@ run: tortoise
 
 # TODO: Send note to https://www.gnu.org/software/guile/docs/guile-tut/tutorial.html missing lm flag
 tortoise: tortoise.o
-	gcc -lm $< -o $@ $(LIBS)
+	gcc $(LDFLAGS) $< -o $@ $(LIBS)
 
 tortoise.o: tortoise.c
 	gcc -c $< -o $@ $(CFLAGS)
