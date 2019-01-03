@@ -1,3 +1,5 @@
+(use-modules (system repl server))
+
 (define (draw-polygon! circumference vertices)
   (let ((side (/ circumference vertices))
         (angle (/ 360 vertices)))
@@ -21,3 +23,7 @@
 (tortoise-turn -100)
 (tortoise-pendown)
 (draw-polygon! 10 64)
+
+;; spawn-server would toss it into a new thread.
+(run-server
+ (make-tcp-server-socket #:port 12345))
