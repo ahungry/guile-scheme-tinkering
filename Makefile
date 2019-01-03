@@ -15,7 +15,7 @@ run: tortoise
 
 # TODO: Send note to https://www.gnu.org/software/guile/docs/guile-tut/tutorial.html missing lm flag
 tortoise: tortoise.o
-	gcc $(LDFLAGS) $< -o $@ $(LIBS)
+	gcc $< -o $@ $(LIBS) $(LDFLAGS)
 
 tortoise.o: tortoise.c
 	gcc -c $< -o $@ $(CFLAGS)
